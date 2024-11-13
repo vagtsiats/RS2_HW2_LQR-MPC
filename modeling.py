@@ -19,9 +19,6 @@ DT = 0.01
 
 
 def dynamics(x, u):
-    x_dot = np.zeros((4, 1))
-
-    x_dot[:2, :] = x[2:, :]
 
     M = jnp.array(
         [
@@ -51,9 +48,7 @@ def dynamics(x, u):
         ]
     )
 
-    x_dot[2:, :] = jnp.linalg.inv(M) @ (u - C @ x[2:, :] + G)
-
-    x_dot = jnp.array(x_dot)
+    x_dot = jnp.vstack((x[2:, :], jnp.linalg.inv(M) @ (u - C @ x[2:, :] + G)))
 
     return x_dot
 
@@ -73,7 +68,7 @@ def visualize(states):
     ax1.plot(states[0, :])
     ax2.plot(states[1, :])
 
-    plt.show()
+    plt.show(block=False)
 
 
 def animate(states):
@@ -105,21 +100,21 @@ def animate(states):
 
 if __name__ == "__main__":
 
-    # # scenario 1
-    # initial_state = np.array([[0, 0, 0, 0]]).T
-    # u = np.array([[0, 0]]).T
+    # scenario 1
+    initial_state = np.array([[0, 0, 0, 0]]).T
+    u = np.array([[0, 0]]).T
 
-    # # scenario 2
-    # initial_state = np.array([[np.pi / 2, 0, 0, 0]]).T
-    # u = np.array([[l1 * m1 * g + (l1 + l2) * m2 * g, l2 * m2 * g]]).T
+    # scenario 2
+    initial_state = np.array([[np.pi / 2, 0, 0, 0]]).T
+    u = np.array([[l1 * m1 * g + (l1 + l2) * m2 * g, l2 * m2 * g]]).T
 
     # scenario 3
     initial_state = np.array([[np.pi / 2, -np.pi / 2, 0, 0]]).T
     u = np.array([[l1 * m1 * g + l1 * m2 * g, 0]]).T
 
-    # # scenario 4
-    # initial_state = np.array([[np.pi, 0, 0, 0]]).T
-    # u = np.array([[0, 0]]).T
+    # scenario 4
+    initial_state = np.array([[np.pi, 0, 0, 0]]).T
+    u = np.array([[0, 0]]).T
 
     # simulation
     T = 5
@@ -139,6 +134,7 @@ if __name__ == "__main__":
         t += DT
 
     print(time.time() - t1)
+    print(states.T)
 
     visualize(states)
 
