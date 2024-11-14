@@ -15,7 +15,7 @@ plt.rcParams.update({"figure.dpi": "200"})
 l1 = l2 = 0.5
 m1 = m2 = 1
 g = 9.81
-DT = 0.01
+DT = 0.05
 
 
 def dynamics(x, u):
@@ -62,13 +62,41 @@ def rk4(xk, uk, dt=DT):
     return xk + (dt / 6) * (f1 + 2 * f2 + 2 * f3 + f4)
 
 
-def visualize(states):
+def visualize(states, controls=None, ref_state=None):
+
+    time = range(states.shape[1])
+    time = [i * DT for i in time]
+
+    angles = np.arctan2(np.sin(states[:2, :]), np.cos(states[:2, :]))
 
     fig, (ax1, ax2) = plt.subplots(2, 1)
-    ax1.plot(states[0, :])
-    ax2.plot(states[1, :])
+    # reference angles
+    if ref_state is not None:
+        ref1 = np.ones((1, states.shape[1])) * ref_state[0, 0]
+        ref2 = np.ones((1, states.shape[1])) * ref_state[1, 0]
+        # print(ref_state)
+        ax1.plot(time, ref1[0, :], color="red", lw=0.8)
+        ax2.plot(time, ref2[0, :], color="red", lw=0.8)
+    # q1,q2 over time
+    pad = 0.5
+    ax1.plot(time, angles[0, :])
+    ax1.set_ylabel("q1")
+    ax1.set_ylim([-np.pi - pad, np.pi + pad])
+    ax2.plot(time, angles[1, :])
+    ax2.set_ylabel("q2")
+    ax2.set_ylim([-np.pi - pad, np.pi + pad])
 
+    plt.xlabel("Time (s)")
     plt.show(block=False)
+
+    if controls is not None:
+        fig, (ax1, ax2) = plt.subplots(2, 1)
+        ax1.plot(time, controls[0, :])
+        ax1.set_ylabel("u1")
+        ax2.plot(time, controls[1, :])
+        ax2.set_ylabel("u2")
+        plt.xlabel("Time (s)")
+        plt.show(block=False)
 
 
 def animate(states):
@@ -93,7 +121,7 @@ def animate(states):
 
     plt.gca().set_aspect("equal", adjustable="box")
 
-    ani = FuncAnimation(fig, update, frames=time_steps, blit=True, interval=10)
+    ani = FuncAnimation(fig, update, frames=time_steps, blit=True, interval=DT * 1000)
 
     plt.show()
 
@@ -134,7 +162,7 @@ if __name__ == "__main__":
         t += DT
 
     print(time.time() - t1)
-    print(states.T)
+    # print(states.T)
 
     visualize(states)
 
