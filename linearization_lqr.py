@@ -15,9 +15,7 @@ def linearize(x_bar, u_bar):
     return A, B
 
 
-def infinite_lqr(A, B, Qn, Q, R):
-
-    K = 5000
+def infinite_lqr(A, B, Qn, Q, R, K=5000):
 
     # Init
     Ps = [np.zeros((4, 4))] * K
@@ -48,8 +46,8 @@ if __name__ == "__main__":
     u_min = np.ones_like(u_bar) * (-10)
     u_max = np.ones_like(u_bar) * (10)
 
-    Q = np.eye(4)
-    R = 0.01 * np.eye(2)
+    Q = 1 * np.eye(4)
+    R = 0.1 * np.eye(2)
     QN = np.eye(4)
 
     A, B = linearize(x_bar, u_bar)
@@ -67,7 +65,7 @@ if __name__ == "__main__":
     states = x
     controls = np.copy(u_bar)
 
-    x_ref = np.array([[0.2, 0, 0, 0]]).T
+    x_ref = np.array([[0.0, np.pi / 2, 0, 0]]).T
 
     while t < T:
 

@@ -6,7 +6,7 @@ import scienceplots
 import time
 
 plt.style.use(["science", "no-latex", "nature", "grid"])
-plt.rcParams.update({"figure.dpi": "200"})
+plt.rcParams.update({"figure.dpi": "300"})
 
 
 # x = [q1,q2,q1_d,q2_d]
@@ -62,7 +62,7 @@ def rk4(xk, uk, dt=DT):
     return xk + (dt / 6) * (f1 + 2 * f2 + 2 * f3 + f4)
 
 
-def visualize(states, controls=None, ref_state=None):
+def visualize(states, controls=None, ref_state=None, name=None):
 
     time = range(states.shape[1])
     time = [i * DT for i in time]
@@ -70,41 +70,75 @@ def visualize(states, controls=None, ref_state=None):
     angles = np.arctan2(np.sin(states[:2, :]), np.cos(states[:2, :]))
 
     fig, (ax1, ax2) = plt.subplots(2, 1)
+
     # reference angles
     if ref_state is not None:
+        ref_state = np.arctan2(np.sin(ref_state[:2, :]), np.cos(ref_state[:2, :]))
         ref1 = np.ones((1, states.shape[1])) * ref_state[0, 0]
         ref2 = np.ones((1, states.shape[1])) * ref_state[1, 0]
         # print(ref_state)
-        ax1.plot(time, ref1[0, :], color="red", lw=0.8)
-        ax2.plot(time, ref2[0, :], color="red", lw=0.8)
+        ax1.plot(time, ref1[0, :], color="red", lw=0.6, label="q1_ref")
+        ax2.plot(time, ref2[0, :], color="red", lw=0.6, label="q2_ref")
+        ax1.legend()
+        ax2.legend()
     # q1,q2 over time
     pad = 0.5
     ax1.plot(time, angles[0, :])
     ax1.set_ylabel("q1")
     ax1.set_ylim([-np.pi - pad, np.pi + pad])
+    ax1.set_yticks(np.arange(-np.pi, np.pi + 0.1, np.pi / 2))
     ax2.plot(time, angles[1, :])
     ax2.set_ylabel("q2")
     ax2.set_ylim([-np.pi - pad, np.pi + pad])
+    ax2.set_yticks(np.arange(-np.pi, np.pi + 0.1, np.pi / 2))
 
     plt.xlabel("Time (s)")
     plt.show(block=False)
 
     if controls is not None:
-        fig, (ax1, ax2) = plt.subplots(2, 1)
+        max_u = np.max(np.abs(controls))
+        fig1, (ax1, ax2) = plt.subplots(2, 1)
         ax1.plot(time, controls[0, :])
+        ax1.set_ylim([-max_u - pad, max_u + pad])
         ax1.set_ylabel("u1")
         ax2.plot(time, controls[1, :])
+        ax2.set_ylim([-max_u - pad, max_u + pad])
         ax2.set_ylabel("u2")
         plt.xlabel("Time (s)")
         plt.show(block=False)
 
+    if name is not None:
+        fig.savefig(name + "_qs")
+        if fig1:
+            fig1.savefig(name + "_us")
 
-def animate(states):
+
+def animate(states, ref_state=None):
     fig, ax = plt.subplots()
 
     ax.set_xlim(-2, 2)
+    ax.set_xticks(np.arange(-2, 2, 0.5))
     ax.set_ylim(-2, 2)
-    (line,) = ax.plot([], [], "o-", lw=1)
+    ax.set_yticks(np.arange(-2, 2, 0.5))
+
+    x1 = l1 * np.sin(states[0, 0])
+    y1 = -l1 * np.cos(states[0, 0])
+    x2 = x1 + l2 * np.sin(states[0, 0] + states[1, 0])
+    y2 = y1 - l2 * np.cos(states[0, 0] + states[1, 0])
+
+    ax.plot([0, x1, x2], [0, y1, y2], "o-", lw=1, color="black", label="initial state")
+
+    if ref_state is not None:
+        x1 = l1 * np.sin(ref_state[0, 0])
+        y1 = -l1 * np.cos(ref_state[0, 0])
+        x2 = x1 + l2 * np.sin(ref_state[0, 0] + ref_state[1, 0])
+        y2 = y1 - l2 * np.cos(ref_state[0, 0] + ref_state[1, 0])
+
+        ax.plot([0, x1, x2], [0, y1, y2], "o-", lw=1, color="grey", label="reference state")
+
+    (line,) = ax.plot([], [], "o-", lw=1, label="current state")
+
+    ax.legend(fontsize=5)
 
     def update(frame):
 
@@ -142,6 +176,10 @@ if __name__ == "__main__":
 
     # scenario 4
     initial_state = np.array([[np.pi, 0, 0, 0]]).T
+    u = np.array([[0, 0]]).T
+
+    # scenario 5
+    initial_state = np.array([[0.0, 0.3, 0, 0]]).T
     u = np.array([[0, 0]]).T
 
     # simulation
