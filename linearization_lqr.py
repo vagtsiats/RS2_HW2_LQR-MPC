@@ -3,14 +3,20 @@ import jax.numpy as jnp
 from jax import jacfwd, jit
 import numpy as np
 
+import derivatives
+
 # from jax import config
 # config.update("jax_enable_x64", True)
 
 
 def linearize(x_bar, u_bar):
+    #auto diff
+    # A = jit(jacfwd(md.rk4, 0))(x_bar, u_bar).reshape(4, 4)
+    # B = jit(jacfwd(md.rk4, 1))(x_bar, u_bar).reshape(4, 2)
 
-    A = jit(jacfwd(md.rk4, 0))(x_bar, u_bar).reshape(4, 4)
-    B = jit(jacfwd(md.rk4, 1))(x_bar, u_bar).reshape(4, 2)
+    #exact
+    A = derivatives.rk4_dx(x_bar, u_bar)
+    B = derivatives.rk4_du(x_bar, u_bar)
 
     return A, B
 
@@ -79,5 +85,6 @@ if __name__ == "__main__":
         controls = np.hstack((controls, u))
         t += md.DT
 
-    md.visualize(states, controls=controls, ref_state=x_ref)
+    md.visualize(states, controls=controls, ref_state=x_ref, name="2lqr-05")
     md.animate(states)
+    md.plt.show()

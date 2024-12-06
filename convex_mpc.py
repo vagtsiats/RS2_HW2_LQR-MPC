@@ -56,7 +56,6 @@ def mpc_controller(qp: qpsolvers.problem.Problem, x_current, x_ref, x_bar, u_bar
 
     d[:N] = (-A @ (x_current - x_bar)).reshape((4,))
     for k in range(Nh - 2):
-        h[k * (N + M) : k * (N + M) + M] = (u_bar.T @ R).reshape((M,))
         h[k * (N + M) + M : k * (N + M) + M + N] = ((x_bar - x_ref).T @ Q).reshape((N,))
     h[-N:] = ((x_bar - x_ref).T @ Pinf).reshape((N,))
 
@@ -85,8 +84,8 @@ if __name__ == "__main__":
     cov = 10e-3  # noise covariance
 
     img_name = None
+    # img_name = "mpc/mpc_far"
 
-    # tradeoff tracking accuracy and noise conpenhesion robustness Nh
 
     Nh = 30  # MPC lookahead horizon
     Q = 100 * np.eye(N)  # state cost
@@ -111,11 +110,12 @@ if __name__ == "__main__":
 
         noise = np.random.normal(0, cov, (4, 1))
         noise[2:, :] = 0
+        x = x+noise
 
         #LQR
-        u = u_bar - Kinf @ (x + noise - x_ref)
+        u = u_bar - Kinf @ (x - x_ref)
         if MPC:
-            u =u_bar + mpc_controller(qp_problem, x + noise, x_ref, x_bar, u_bar)
+            u = u_bar + mpc_controller(qp_problem, x, x_ref, x_bar, u_bar)
 
         u_new = np.maximum(np.minimum(u, u_max), -u_max)
 

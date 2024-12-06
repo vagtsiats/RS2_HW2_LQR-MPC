@@ -68,6 +68,7 @@ def visualize(states, controls=None, ref_state=None, name=None):
     time = [i * DT for i in time]
 
     angles = np.arctan2(np.sin(states[:2, :]), np.cos(states[:2, :]))
+    # angles = states[:2,:]
 
     fig, (ax1, ax2) = plt.subplots(2, 1)
 
@@ -82,18 +83,26 @@ def visualize(states, controls=None, ref_state=None, name=None):
         ax1.legend()
         ax2.legend()
     # q1,q2 over time
+    y_pos = np.arange(-np.pi, np.pi + 0.1, np.pi / 2)
+
     pad = 0.5
     ax1.plot(time, angles[0, :])
     ax1.set_ylabel("q1")
     ax1.set_ylim([-np.pi - pad, np.pi + pad])
-    ax1.set_yticks(np.arange(-np.pi, np.pi + 0.1, np.pi / 2))
+    ax1.set_yticks(y_pos)
+    ax1.set_yticklabels([f'{x/np.pi:.1f}π' for x in y_pos])
     ax2.plot(time, angles[1, :])
     ax2.set_ylabel("q2")
     ax2.set_ylim([-np.pi - pad, np.pi + pad])
-    ax2.set_yticks(np.arange(-np.pi, np.pi + 0.1, np.pi / 2))
+    ax2.set_yticks(y_pos)
+    ax2.set_yticklabels([f'{x/np.pi:.1f}π' for x in y_pos])
+
+    # plt.subplots_adjust(left = 0.1, right=1.5)
 
     plt.xlabel("Time (s)")
     plt.show(block=False)
+
+    fig1 = None
 
     if controls is not None:
         max_u = np.max(np.abs(controls))
@@ -109,7 +118,7 @@ def visualize(states, controls=None, ref_state=None, name=None):
 
     if name is not None:
         fig.savefig(name + "_qs")
-        if fig1:
+        if fig1 is not None:
             fig1.savefig(name + "_us")
 
 
