@@ -77,15 +77,14 @@ if __name__ == "__main__":
     u_bar = np.array([[0.0, 0.0]]).T
 
     max_torque = 10
-    x_ref = np.array([[np.pi-0.4, 0.0, 0.0, 0.0]]).T
-    x = np.array([[np.pi, 0.0, 0.0, 0.0]]).T  # initial state
+    x_ref = np.array([[np.pi, 0.0, 0.0, 0.0]]).T
+    x = np.array([[0.0, 0.0, 0.0, 0.0]]).T  # initial state
 
-    MPC = True
-    cov = 10e-3  # noise covariance
+    MPC = False
+    cov = 10e-4  # noise covariance
 
     img_name = None
     # img_name = "mpc/mpc_far"
-
 
     Nh = 30  # MPC lookahead horizon
     Q = 100 * np.eye(N)  # state cost
@@ -110,9 +109,9 @@ if __name__ == "__main__":
 
         noise = np.random.normal(0, cov, (4, 1))
         noise[2:, :] = 0
-        x = x+noise
+        x = x + noise
 
-        #LQR
+        # LQR
         u = u_bar - Kinf @ (x - x_ref)
         if MPC:
             u = u_bar + mpc_controller(qp_problem, x, x_ref, x_bar, u_bar)
